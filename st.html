@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Train Status</title>
+
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#000,#1a1a1a);
+  color:white;
+  text-align:center;
+}
+
+header {
+  background:#111;
+  padding:15px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container {
+  margin-top:40px;
+}
+
+input {
+  padding:12px;
+  width:70%;
+  max-width:300px;
+  border:none;
+  border-radius:8px;
+}
+
+button {
+  padding:12px 20px;
+  background:#ff9800;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+  margin-left:10px;
+}
+
+button:hover {
+  background:#e68900;
+}
+
+.loader {
+  display:none;
+  margin-top:20px;
+  font-size:18px;
+}
+
+.result {
+  margin-top:20px;
+  padding:20px;
+}
+
+.card {
+  background:#111;
+  padding:15px;
+  margin:10px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(255,255,255,0.1);
+}
+</style>
+
+</head>
+
+<body>
+
+<header>🚆 Live Train Status Checker</header>
+
+<div class="container">
+  <input type="text" id="train" placeholder="Enter Train Number">
+  <button onclick="getStatus()">Check</button>
+
+  <div class="loader" id="loader">⏳ Fetching Live Data...</div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+function getStatus(){
+  var train = document.getElementById("train").value;
+
+  if(train == ""){
+    alert("Enter train number");
+    return;
+  }
+
+  document.getElementById("loader").style.display="block";
+  document.getElementById("result").innerHTML="";
+
+  fetch("https://irctc1.p.rapidapi.com/trainLiveStatus?trainNo=" + train + "&startDay=1", {
+    method: "GET",
+    headers: {
+      "X-RapidAPI-Key": "a61c2cb28dmsh816a4962cd342cfp1a4f90jsn0183cae83615",
+      "X-RapidAPI-Host": "real-time-pnr-status-api-for-indian-railways.p.rapidapi.com"
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById("loader").style.display="none";
+
+    if(data.status == false){
+      document.getElementById("result").innerHTML = "❌ Invalid Train Number";
+      return;
+    }
+
+    let d = data.data;
+
+    document.getElementById("result").innerHTML = `
+      <div class="card">🚆 Train: ${d.train_name}</div>
+      <div class="card">📍 Current Station: ${d.current_station_name}</div>
+      <div class="card">⏱ Delay: ${d.delay} min</div>
+      <div class="card">📌 Status: ${d.status}</div>
+    `;
+  })
+  .catch(err => {
+    document.getElementById("loader").style.display="none";
+    document.getElementById("result").innerHTML = "Error loading data";
+  });
+}
+</script>
+
+</body>
+</html>
